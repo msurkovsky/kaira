@@ -365,15 +365,15 @@ class SettingWidget(gtk.Table):
 
 
 # register new signals to setting widget
-gobject.type_register(SettingWidget)
-""" It is emitted when the widget get the focus. """
-gobject.signal_new("select-key",
-                   SettingWidget,
-                   gobject.SIGNAL_RUN_FIRST,
-                   gobject.TYPE_NONE,
-                   (gobject.TYPE_PYOBJECT,))
+#gobject.type_register(SettingWidget)
+#""" It is emitted when the widget get the focus. """
+#gobject.signal_new("select-key",                                               // TODO this signal is not used, remove
+                   #SettingWidget,
+                   #gobject.SIGNAL_RUN_FIRST,
+                   #gobject.TYPE_NONE,
+                   #(gobject.TYPE_PYOBJECT,))
 
-""" It is emitted when the widget lose the focus. """
+#""" It is emitted when the widget lose the focus. """
 gobject.signal_new("value-committed",
                    SettingWidget,
                    gobject.SIGNAL_RUN_FIRST,
