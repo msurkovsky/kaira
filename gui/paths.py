@@ -29,5 +29,7 @@ UI_DIR = os.path.join(KAIRA_GUI, "ui")
 PTP_DIR = os.path.join(KAIRA_ROOT, "ptp")
 PTP_BIN = os.path.join(KAIRA_ROOT, "ptp", "ptp.py")
 
+# TODO: PACKEGES_DIR -- is it still actual?
 PACKAGES_DIR = os.path.join(KAIRA_ROOT, "packages")
 EXTENSIONS_DIR = os.path.join(KAIRA_GUI, "extensions")
+LIB_DIR = os.path.join(KAIRA_GUI, "libs")

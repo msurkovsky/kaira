@@ -25,6 +25,7 @@ import re
 import sys
 import paths
 sys.path.append(paths.PTP_DIR)
+sys.path.append(paths.LIB_DIR)
 import ConfigParser
 
 import gtkutils
