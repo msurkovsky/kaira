@@ -23,6 +23,7 @@ import extensions
 import datatypes
 import utils
 import exportri
+import xes
 from exportri import ExportRunInstance
 
 class TracelogExport(extensions.Operation):
@@ -45,3 +46,20 @@ class TracelogExport(extensions.Operation):
                                  ri.get_table())
 
 extensions.add_operation(TracelogExport)
+
+class TracelogToXES(extensions.Operation):
+
+    name = "Kaira Tracelog to XES"
+    description = "Converts a kaira tracelog into a eXtensible Event Stream"\
+                  " (XES) format"
+
+    # TODO: work with more than one paramter
+    #parameters = [ extensions.Parameter("Tracelog", datatypes.t_tracelog) ]
+    parameters =[]
+
+    #def run(self, app, tracelog):
+    def run(self, app):
+        log = xes.Log()
+        print log
+
+extensions.add_operation(TracelogToXES)
