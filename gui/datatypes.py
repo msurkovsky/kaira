@@ -128,22 +128,26 @@ def get_load_file_filters():
 
     result = [ all_supported_types ]
     for type in types_repository:
-        patterns = [ "*." + s for s in type.loaders.keys() ]
-        filter = gtk.FileFilter()
-        filter.set_name("{0} ({1})".format(type.short_name, ", ".join(patterns)))
-        result.append(filter)
+        if type.loaders:
+            patterns = [ "*." + s for s in type.loaders.keys() ]
+            filter = gtk.FileFilter()
+            filter.set_name("{0} ({1})".format(type.short_name,
+                                               ", ".join(patterns)))
+            result.append(filter)
 
-        for pattern in patterns:
-            filter.add_pattern(pattern)
-            all_supported_types.add_pattern(pattern)
+            for pattern in patterns:
+                filter.add_pattern(pattern)
+                all_supported_types.add_pattern(pattern)
     return result
 
 def get_save_file_filter(type):
-    patterns = [ "*." + s for s in type.savers.keys() ]
-    filter = gtk.FileFilter()
-    filter.set_name("{0} ({1})".format(type.short_name, ", ".join(patterns)))
-    for pattern in patterns:
-        filter.add_pattern(pattern)
+    if type.savers:
+        patterns = [ "*." + s for s in type.savers.keys() ]
+        filter = gtk.FileFilter()
+        filter.set_name("{0} ({1})".format(type.short_name, ", ".join(patterns)))
+        for pattern in patterns:
+            filter.add_pattern(pattern)
+
     return filter
 
 # *****************************************************************************
