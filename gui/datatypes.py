@@ -301,3 +301,10 @@ def csv_view(table, app):
 t_table.get_view = csv_view
 
 types_repository.append(t_table)
+
+# -----------------------------------------------------------------------------
+# XES (eXtensible Event Stream) type
+
+t_xes = Type("eXtensible Event Stream", "XES")
+
+types_repository.append(t_xes)
