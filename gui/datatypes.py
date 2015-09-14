@@ -301,3 +301,20 @@ def csv_view(table, app):
 t_table.get_view = csv_view
 
 types_repository.append(t_table)
+
+# -----------------------------------------------------------------------------
+# XES (eXtensible Event Stream) type
+
+t_xes = Type("eXtensible Event Stream", "XES")
+
+def store_xes(log, filename, app, settings):
+    with open(filename, "w") as xeslog:
+        xeslog.write(str(log))
+
+    return (True, settings)
+
+# TODO: add some viewr -- textview will be enough
+
+t_xes.register_store_function("xes.xml", store_xes)
+
+types_repository.append(t_xes)
