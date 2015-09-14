@@ -25,6 +25,7 @@ import utils
 import exportri
 import xes
 from exportri import ExportRunInstance
+from runinstance import RunInstance
 
 class TracelogExport(extensions.Operation):
 
@@ -49,17 +50,59 @@ extensions.add_operation(TracelogExport)
 
 class TracelogToXES(extensions.Operation):
 
-    name = "Kaira Tracelog to XES"
+    class XESRunInstance(RunInstance):
+
+        def __init__(self, tracelog, xes_trace):
+            RunInstance.__init__(self,
+                                 tracelog.project,
+                                 tracelog.process_count)
+
+            self.xes_trace = xes_trace
+
+        def get_log(self):
+            return self.xes_trace
+
+        def transition_finished(self, process_id, time):
+            activity = self.activites[process_id]
+            e = xes.Event()
+            e.add_attribute(xes.Attribute(
+                type="id",
+                key="id",
+                value=str(activity.transition.id)
+            ))
+            e.add_attribute(xes.Attribute(
+                type="string",
+                key="name",
+                value=activity.transition.get_name_or_id()
+            ))
+            e.add_attribute(xes.Attribute(
+                type="int",
+                key="pid",
+                value=str(process_id)
+            ))
+            # TODO: add time -- in a correct datatype
+            self.xes_trace.add_event(e)
+
+            RunInstance.transition_finished(self, process_id, time)
+
+    name = "Tracelogs to XES"
     description = "Converts a kaira tracelog into a eXtensible Event Stream"\
                   " (XES) format"
 
-    # TODO: work with more than one paramter
-    #parameters = [ extensions.Parameter("Tracelog", datatypes.t_tracelog) ]
-    parameters =[]
+    parameters =[ extensions.Parameter("Tracelog", datatypes.t_tracelog, True) ]
 
     #def run(self, app, tracelog):
-    def run(self, app):
+    def run(self, app, tracelogs):
         log = xes.Log()
-        print log
+        for tracelog in tracelogs:
+            trace = xes.Trace()
+            xesri = self.XESRunInstance(tracelog, trace)
+            tracelog.execute_all_events(xesri)
+            log.add_trace(trace)
+            #TODO: add classifires
+
+        return extensions.Source("Tracelog for process mining",
+                                 datatypes.t_xes,
+                                 log)
 
 extensions.add_operation(TracelogToXES)
