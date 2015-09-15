@@ -27,6 +27,7 @@ import runview
 import numpy as np
 from tracelog import TraceLog
 from table import Table
+from codeedit import CodeEditor
 
 """Supported types for extensions."""
 
@@ -313,7 +314,12 @@ def store_xes(log, filename, app, settings):
 
     return (True, settings)
 
-# TODO: add some viewr -- textview will be enough
+def xml_editor(log, app):
+    editor = CodeEditor(app, "xml")
+    editor.set_text(str(log))
+    return editor
+
+t_xes.get_view = xml_editor
 
 t_xes.register_store_function("xes.xml", store_xes)
 
