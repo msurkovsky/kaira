@@ -66,10 +66,21 @@ class TracelogToXES(extensions.Operation):
             activity = self.activites[process_id]
             e = xes.Event()
             e.add_attribute(xes.Attribute(
+                type="int",
+                key="timestamp",
+                value=str(activity.time)
+            ))
+            e.add_attribute(xes.Attribute(
                 type="id",
                 key="id",
                 value=str(activity.transition.id)
             ))
+            e.add_attribute(xes.Attribute(
+                type="int",
+                key="pid",
+                value=str(process_id)
+            ))
+            # optional attributes
             e.add_attribute(xes.Attribute(
                 type="string",
                 key="name",
@@ -77,10 +88,9 @@ class TracelogToXES(extensions.Operation):
             ))
             e.add_attribute(xes.Attribute(
                 type="int",
-                key="pid",
-                value=str(process_id)
+                key="duration",
+                value=(str(time - activity.time))
             ))
-            # TODO: add time -- in a correct datatype
             self.xes_trace.add_event(e)
 
             RunInstance.transition_finished(self, process_id, time)
@@ -91,7 +101,6 @@ class TracelogToXES(extensions.Operation):
 
     parameters =[ extensions.Parameter("Tracelog", datatypes.t_tracelog, True) ]
 
-    #def run(self, app, tracelog):
     def run(self, app, tracelogs):
         log = xes.Log()
         for tracelog in tracelogs:
@@ -99,7 +108,8 @@ class TracelogToXES(extensions.Operation):
             xesri = self.XESRunInstance(tracelog, trace)
             tracelog.execute_all_events(xesri)
             log.add_trace(trace)
-            #TODO: add classifires
+            log.add_classifier(xes.Classifier("activity_uid", "id pid"))
+            log.add_classifier(xes.Classifier("activity_name", "name pid"))
 
         return extensions.Source("Tracelog for process mining",
                                  datatypes.t_xes,
