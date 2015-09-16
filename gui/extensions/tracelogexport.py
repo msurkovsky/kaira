@@ -52,6 +52,19 @@ class TracelogToXES(extensions.Operation):
 
     class XESRunInstance(RunInstance):
 
+
+        TIME_STAMP = { "name" : "timestamp", "type" : "int" }
+        PROCESS_ID = { "name" : "pid", "type" : "int" }
+        ACTIVITY = { "name" : "activity", "type" : "string" }
+
+        NAME = {"name" : "name", "type" : "string" }
+        TRANSITION_ID = {"name" : "trans-id", "type" : "int" }
+
+        @staticmethod
+        def createAttr(definition, value=""):
+            return xes.Attribute(type=definition["type"],
+                                 key=definition["name"], value=str(value))
+
         def __init__(self, tracelog, xes_trace):
             RunInstance.__init__(self,
                                  tracelog.project,
@@ -66,33 +79,14 @@ class TracelogToXES(extensions.Operation):
             transition = self.net.item_by_id(transition_id)
 
             e = xes.Event()
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="timestamp",
-                value=str(time)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="pid",
-                value=str(process_id)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="string",
-                key="activity",
-                value="fire-{0}".format(transition_id)
-            ))
+            e.add_attribute(self.createAttr(self.TIME_STAMP, time))
+            e.add_attribute(self.createAttr(self.PROCESS_ID, process_id))
+            e.add_attribute(self.createAttr(self.ACTIVITY,
+                                             "fire-{0}".format(transition_id)))
 
             # optional attributes
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="trans-id",
-                value=str(transition_id)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="string",
-                key="name",
-                value=transition.get_name_or_id()
-            ))
+            e.add_attribute(self.createAttr(self.TRANSITION_ID, transition_id))
+            e.add_attribute(self.createAttr(self.NAME, transition.get_name_or_id()))
             self.xes_trace.add_event(e)
 
             RunInstance.transition_fired(self, process_id,
@@ -103,67 +97,36 @@ class TracelogToXES(extensions.Operation):
             transition_fire = self.last_event_activity
 
             e = xes.Event()
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="timestamp",
-                value=str(time),
-            ))
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="pid",
-                value=str(process_id)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="string",
-                key="activity",
-                value="send/{0}/{1}".format(process_id, target_id)
-            ))
+            e.add_attribute(self.createAttr(self.TIME_STAMP, time))
+            e.add_attribute(self.createAttr(self.PROCESS_ID, process_id))
+            e.add_attribute(self.createAttr(
+                self.ACTIVITY, "send/{0}/{1}".format(process_id, target_id)))
 
             # optional attributes
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="trans-id",
-                value=str(transition_fire.transition.id)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="tpid",
-                value=str(target_id)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="msg-size",
-                value=str(size)
-            ))
+            e.add_attribute(self.createAttr(self.TRANSITION_ID,
+                                             transition_fire.transition.id))
+            e.add_attribute(self.createAttr(
+                { "name" : "tpid", "type" : "int" }, value=str(target_id)))
+            e.add_attribute(self.createAttr(
+                { "name" : "msg-size", "type": "int" }, size))
             self.xes_trace.add_event(e)
+
             RunInstance.event_send(self, process_id,
                                    time, target_id, size, edge_id)
 
         def event_receive(self, process_id, time, origin_id):
             e = xes.Event()
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="timestamp",
-                value=str(time)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="pid",
-                value=str(process_id)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="string",
-                key="activity",
-                value="receive/{0}/{1}".format(origin_id, process_id)
-            ))
+            e.add_attribute(self.createAttr(self.TIME_STAMP, time))
+            e.add_attribute(self.createAttr(self.PROCESS_ID, process_id))
+            e.add_attribute(self.createAttr(
+                self.ACTIVITY, "receive/{0}/{1}".format(origin_id, process_id)))
 
             # optional attributes
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="opid",
-                value=str(origin_id)
-            ))
+            e.add_attribute(self.createAttr(
+                { "name" : "opid", "type" : "int" }, value=str(origin_id)))
+
             self.xes_trace.add_event(e)
+
             RunInstance.event_receive(self, process_id, time, origin_id)
 
 
@@ -174,7 +137,15 @@ class TracelogToXES(extensions.Operation):
     parameters =[ extensions.Parameter("Tracelog", datatypes.t_tracelog, True) ]
 
     def run(self, app, tracelogs):
-        log = xes.Log()
+        log = xes.Log("2.0")
+        #print dir(self.XESRunInstance)
+        log.add_global_event_attribute(
+            self.XESRunInstance.createAttr(self.XESRunInstance.TIME_STAMP))
+        log.add_global_event_attribute(
+            self.XESRunInstance.createAttr(self.XESRunInstance.PROCESS_ID))
+        log.add_global_event_attribute(
+            self.XESRunInstance.createAttr(self.XESRunInstance.ACTIVITY))
+
         for tracelog in tracelogs:
             trace = xes.Trace()
             xesri = self.XESRunInstance(tracelog, trace)
