@@ -73,21 +73,21 @@ class TracelogToXES(extensions.Operation):
             ))
             e.add_attribute(xes.Attribute(
                 type="int",
-                key="trans-id",
-                value=str(transition_id)
-            ))
-            e.add_attribute(xes.Attribute(
-                type="int",
                 key="pid",
                 value=str(process_id)
             ))
             e.add_attribute(xes.Attribute(
                 type="string",
                 key="activity",
-                value="fire"
+                value="fire-{0}".format(transition_id)
             ))
 
             # optional attributes
+            e.add_attribute(xes.Attribute(
+                type="int",
+                key="trans-id",
+                value=str(transition_id)
+            ))
             e.add_attribute(xes.Attribute(
                 type="string",
                 key="name",
@@ -95,8 +95,8 @@ class TracelogToXES(extensions.Operation):
             ))
             self.xes_trace.add_event(e)
 
-            RunInstance.transition_fired(
-                    self, process_id, time, transition_id, values)
+            RunInstance.transition_fired(self, process_id,
+                                         time, transition_id, values)
 
         def event_send(self, process_id, time, target_id, size, edge_id):
             assert isinstance(self.last_event_activity, TransitionFire)
@@ -107,11 +107,6 @@ class TracelogToXES(extensions.Operation):
                 type="int",
                 key="timestamp",
                 value=str(time),
-            ))
-            e.add_attribute(xes.Attribute(
-                type="int",
-                key="trans-id",
-                value=str(transition_fire.transition.id)
             ))
             e.add_attribute(xes.Attribute(
                 type="int",
@@ -127,6 +122,11 @@ class TracelogToXES(extensions.Operation):
             # optional attributes
             e.add_attribute(xes.Attribute(
                 type="int",
+                key="trans-id",
+                value=str(transition_fire.transition.id)
+            ))
+            e.add_attribute(xes.Attribute(
+                type="int",
                 key="tpid",
                 value=str(target_id)
             ))
@@ -136,28 +136,16 @@ class TracelogToXES(extensions.Operation):
                 value=str(size)
             ))
             self.xes_trace.add_event(e)
-
-            RunInstance.event_send(
-                    self, process_id, time, target_id, size, edge_id)
+            RunInstance.event_send(self, process_id,
+                                   time, target_id, size, edge_id)
 
         def event_receive(self, process_id, time, origin_id):
-            # take the first packet from the queue
-            # TODO: how to solve receive problem, there is no posibility to
-            #       say exactly which transition will receive this
-            #packet = self.packets[process_id * self.process_count + origin_id][0]
-            #print self.net.item_by_id(packet.edge_id).to_item
-
             e = xes.Event()
             e.add_attribute(xes.Attribute(
                 type="int",
                 key="timestamp",
                 value=str(time)
             ))
-            #e.add_attribute(xes.Attribute( # TODO: how to get this?
-                #type="int",
-                #key="trans-id",
-                #value=str(transition_fire.transition.id)
-            #))
             e.add_attribute(xes.Attribute(
                 type="int",
                 key="pid",
@@ -176,8 +164,8 @@ class TracelogToXES(extensions.Operation):
                 value=str(origin_id)
             ))
             self.xes_trace.add_event(e)
-
             RunInstance.event_receive(self, process_id, time, origin_id)
+
 
     name = "Tracelogs to XES"
     description = "Converts a kaira tracelog into a eXtensible Event Stream"\
@@ -193,7 +181,7 @@ class TracelogToXES(extensions.Operation):
             tracelog.execute_all_events(xesri)
             log.add_trace(trace)
             log.add_classifier(xes.Classifier("activity_uid",
-                                              "trans_id pid activity"))
+                                              "pid activity"))
 
         return extensions.Source("Tracelog for process mining",
                                  datatypes.t_xes,
