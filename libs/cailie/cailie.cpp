@@ -7,7 +7,9 @@
 #include "listener.h"
 #include "utils.h"
 #include "parameters.h"
+#include "ctrlseq.h"
 
+#include <iostream>
 #include <getopt.h>
 #include <assert.h>
 #include <stdarg.h>
@@ -183,7 +185,7 @@ void ca::init(int argc,
 
 	atexit(finalize);
 	ca::parameters = parameters;
-	std::string all_args = std::string("hp:t:l:s:br:T:S") + extra_args;
+	std::string all_args = std::string("hp:t:l:s:br:T:Sc:") + extra_args;
 	while ((c = getopt_long (argc, argv, all_args.c_str(), longopts, NULL)) != -1)
 		switch (c) {
 			case 'h': {
@@ -264,6 +266,15 @@ void ca::init(int argc,
 				sequential_run = true;
 				#endif
 			} break;
+
+            case 'c': { // controled run
+                const std::string path = optarg;
+                ControlSequence ctrlseq(path);
+                Command *cmd;
+                while ((cmd = ctrlseq.next()) != NULL) {
+                    cmd->run_command();
+                }
+            } break;
 
 			case '?':
 			default:

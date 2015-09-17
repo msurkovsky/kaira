@@ -13,6 +13,7 @@ source_files =  (
     "utils.cpp",
     "parameters.cpp",
     "usertools.cpp",
+    "ctrlseq.cpp",
 )
 
 def build(ctx):
