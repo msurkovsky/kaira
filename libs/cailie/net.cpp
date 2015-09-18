@@ -82,6 +82,15 @@ Transition * Net::pick_active_transition()
 	return NULL;
 }
 
+Transition * Net::get_transition(int transition_id) {
+    for (int t = 0; t < def->get_transitions_count(); t++) {
+        if (transitions[t].get_id() == transition_id) {
+            return &transitions[t];
+        }
+    }
+    return NULL;
+}
+
 int Net::fire_transition(Thread *thread, int transition_id)
 {
 	TransitionDef *tr = def->get_transition_def(transition_id);

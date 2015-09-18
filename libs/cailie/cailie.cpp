@@ -7,7 +7,6 @@
 #include "listener.h"
 #include "utils.h"
 #include "parameters.h"
-#include "ctrlseq.h"
 
 #include <iostream>
 #include <getopt.h>
@@ -27,6 +26,7 @@ Listener *listener = NULL;
 std::vector<Parameter*> parameters;
 
 size_t tracelog_size = 0;
+ControlSequence *control_sequence = NULL;
 
 #ifdef CA_SHMEM
 Process **processes = NULL;
@@ -165,6 +165,10 @@ static void finalize()
 	if (listener != NULL) {
 		delete listener;
 	}
+
+    if (control_sequence != NULL) {
+        delete control_sequence;
+    }
 }
 
 void ca::init(int argc,
@@ -268,12 +272,7 @@ void ca::init(int argc,
 			} break;
 
             case 'c': { // controled run
-                const std::string path = optarg;
-                ControlSequence ctrlseq(path);
-                Command *cmd;
-                while ((cmd = ctrlseq.next()) != NULL) {
-                    cmd->run_command();
-                }
+                control_sequence = new ControlSequence(optarg);
             } break;
 
 			case '?':

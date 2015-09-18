@@ -17,6 +17,7 @@
 #include "place.h"
 #include "parameters.h"
 #include "usertools.h"
+#include "ctrlseq.h"
 
 #define CA_DLOG(...)
 

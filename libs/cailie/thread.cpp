@@ -6,6 +6,10 @@
 
 #include "thread.h"
 
+namespace ca {
+    extern ControlSequence *control_sequence;
+}
+
 using namespace ca;
 
 Thread::Thread(Process *process) : process(process), messages(NULL)

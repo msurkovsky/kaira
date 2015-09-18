@@ -6,28 +6,29 @@
 using namespace ca;
 using namespace std;
 
-bool CmdFireTransition::run_command(/*const Net &net*/) {
-    std::cout << "Fire: " << process_id << "; " << transition_id << std::endl;
+bool CmdFireTransition::run_command(const Net &net) {
+    //
+    //Transition *tr = n
     return true;
 }
 
-bool CmdStartTransition::run_command(/*const Net &net*/) {
+bool CmdStartTransition::run_command(const Net &net) {
     std::cout << "Start: " << process_id << "; " << transition_id << std::endl;
     return true;
 }
 
-bool CmdFinishTransition::run_command(/*const Net &net*/) {
+bool CmdFinishTransition::run_command(const Net &net) {
     std::cout << "Finish: " << process_id << std::endl;
     return true;
 }
 
-bool CmdReceive::run_command(/*const Net &net*/) {
+bool CmdReceive::run_command(const Net &net) {
     std::cout << "Receive: " << process_id << "; " << from_process_id << std::endl;
     return true;
 }
 
-ControlSequence::ControlSequence(const string &path) : idx(0) {
-    read(path);
+ControlSequence::ControlSequence(const string &path, int process_id) : idx(0) {
+    read(path, process_id);
 }
 
 ControlSequence::~ControlSequence() {
@@ -35,7 +36,8 @@ ControlSequence::~ControlSequence() {
         delete commands[i];
     }
 }
-void ControlSequence::read(const string &path) {
+
+void ControlSequence::read(const string &path, int process_id) {
 
     string line;
     ifstream ctrlseq(path.c_str());
@@ -46,6 +48,11 @@ void ControlSequence::read(const string &path) {
             int process;
             char action;
             cmd >> process >> action;
+
+            if (process_id != ANY_PROCESS && process_id != process) {
+                continue;
+            }
+
             switch (action) {
                 case 'T': {
                     int transition_id;
