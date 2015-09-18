@@ -1,33 +1,9 @@
 
 #include <fstream>
-#include <iostream>
 #include "ctrlseq.h"
 
 using namespace ca;
 using namespace std;
-
-bool CmdFireTransition::run_command(Net &net) {
-    Transition *tr = net.get_transition(transition_id);
-    if (tr == NULL) {
-        return false;
-    }
-    return true;
-}
-
-bool CmdStartTransition::run_command(Net &net) {
-    std::cout << "Start: " << process_id << "; " << transition_id << std::endl;
-    return true;
-}
-
-bool CmdFinishTransition::run_command(Net &net) {
-    std::cout << "Finish: " << process_id << std::endl;
-    return true;
-}
-
-bool CmdReceive::run_command(Net &net) {
-    std::cout << "Receive: " << process_id << "; " << from_process_id << std::endl;
-    return true;
-}
 
 ControlSequence::ControlSequence(const string &path, int process_id) : idx(0) {
     read(path, process_id);

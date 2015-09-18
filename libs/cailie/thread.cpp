@@ -150,6 +150,23 @@ void Thread::run_one_step()
 
 void Thread::run_control_sequence() {
 
+    if (control_sequence == NULL) {
+        fprintf(stderr, "No control sequence available!\n");
+    }
+
+    control_sequence->begin();
+
+    Command *cmd = control_sequence->next();
+    while (cmd != NULL) {
+        Net *net = process->get_net();
+        if (net == NULL) { // TODO: find out why?!
+            continue;
+        }
+        cmd->run_command(*net);
+    }
+    // computation may continue, so the program is finished as usual.
+    run_scheduler();
+
 }
 
 Net * Thread::spawn_net(int def_index)
