@@ -148,6 +148,10 @@ void Thread::run_one_step()
 	tr->full_fire(this, net);
 }
 
+void Thread::run_control_sequence() {
+
+}
+
 Net * Thread::spawn_net(int def_index)
 {
 	return process->spawn_net(def_index, true);

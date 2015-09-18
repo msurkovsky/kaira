@@ -6,23 +6,25 @@
 using namespace ca;
 using namespace std;
 
-bool CmdFireTransition::run_command(const Net &net) {
-    //
-    //Transition *tr = n
+bool CmdFireTransition::run_command(Net &net) {
+    Transition *tr = net.get_transition(transition_id);
+    if (tr == NULL) {
+        return false;
+    }
     return true;
 }
 
-bool CmdStartTransition::run_command(const Net &net) {
+bool CmdStartTransition::run_command(Net &net) {
     std::cout << "Start: " << process_id << "; " << transition_id << std::endl;
     return true;
 }
 
-bool CmdFinishTransition::run_command(const Net &net) {
+bool CmdFinishTransition::run_command(Net &net) {
     std::cout << "Finish: " << process_id << std::endl;
     return true;
 }
 
-bool CmdReceive::run_command(const Net &net) {
+bool CmdReceive::run_command(Net &net) {
     std::cout << "Receive: " << process_id << "; " << from_process_id << std::endl;
     return true;
 }

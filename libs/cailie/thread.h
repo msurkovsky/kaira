@@ -77,6 +77,7 @@ class Thread : public ThreadBase {
 		void join();
 		void run_scheduler();
 		void run_one_step();
+        void run_control_sequence();
 
 		void add_message(ThreadMessage *message);
 		bool process_thread_messages();
