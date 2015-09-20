@@ -105,9 +105,28 @@ int ca::main()
 				}
 			}
 		}
+    } else if (control_sequence) {
+        bool quit = false;
+        control_sequence->begin();
+        Command *cmd = control_sequence->next();
+        bool in_idle = false;
+        while (cmd != NULL && !quit) {
+            Thread *thread = processes[cmd->get_process_id()]->get_thread();
+            Command::result_t res = cmd->run_command(thread);
+
+            if (res == Command::REPEAT) {
+                if (!in_idle && thread->get_tracelog()) {
+                    thread->get_tracelog()->event_idle();
+                }
+                in_idle = true;
+                continue;
+            }
+            in_idle = false;
+            cmd = control_sequence->next();
+        }
 	} else { // Normal run
 		for (int t = 0; t < process_count; t++) {
-			processes[t]->start(true, control_sequence != NULL);
+			processes[t]->start(true);
 		}
 
 		for (int t = 0; t < process_count; t++) {
