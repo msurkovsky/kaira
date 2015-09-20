@@ -52,7 +52,7 @@ class Process {
 	public:
 		Process(int process_id, int process_count, int defs_count, NetDef **defs);
 		virtual ~Process();
-		void start(bool own_thread);
+		void start(bool own_thread, bool controlled_run=false);
 		void join();
 		void clear();
 		void send_barriers(pthread_barrier_t *barrier1, pthread_barrier_t *barrier2);

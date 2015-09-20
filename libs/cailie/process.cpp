@@ -164,13 +164,17 @@ Process::~Process()
 	#endif
 }
 
-void Process::start(bool own_thread) {
+void Process::start(bool own_thread, bool controlled_run) {
 	quit_flag = false;
-	if (!own_thread) {
-		thread->run_scheduler();
-	} else {
-		thread->start();
-	}
+    if (controlled_run) {
+        thread->start(true);
+    } else {
+        if (!own_thread) {
+            thread->run_scheduler();
+        } else {
+            thread->start();
+        }
+    }
 }
 
 void Process::join() {
