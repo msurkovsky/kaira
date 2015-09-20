@@ -73,11 +73,22 @@ int Thread::process_messages()
 	return process->process_packets(this) || result;
 }
 
+int Thread::process_messages(int from_process) {
+    int result = process_thread_messages();
+    return process->process_packets(this, from_process) || result;
+}
+
 static void * thread_run(void *data)
 {
 	Thread *thread = (Thread*) data;
 	thread->run_scheduler();
 	return NULL;
+}
+
+static void * thread_controlled_run(void *data) {
+    Thread *thread = (Thread*) data;
+    thread->run_control_sequence();
+    return NULL;
 }
 
 void Thread::join()
@@ -88,10 +99,14 @@ void Thread::join()
 	#endif
 }
 
-void Thread::start()
+void Thread::start(bool controlled_run)
 {
        CA_DLOG("Starting thread process=%i\n", get_process_id());
-       pthread_create(&thread, NULL, thread_run, this);
+       if (controlled_run) {
+           pthread_create(&thread, NULL, thread_controlled_run, this);
+       } else {
+           pthread_create(&thread, NULL, thread_run, this);
+       }
 }
 
 void Thread::quit_all()
@@ -152,21 +167,33 @@ void Thread::run_control_sequence() {
 
     if (control_sequence == NULL) {
         fprintf(stderr, "No control sequence available!\n");
+        exit(1);
     }
 
     control_sequence->begin();
 
+	bool in_idle = false;
     Command *cmd = control_sequence->next();
-    while (cmd != NULL) {
-        Net *net = process->get_net();
-        if (net == NULL) { // TODO: find out why?!
+    while (cmd != NULL && !process->quit_flag) {
+        Command::result_t res = cmd->run_command(this);
+        if (res == Command::FAIL) {
+            fprintf(stderr, "Command failed.\n");
+            exit(1);
+        }
+
+        if (res == Command::REPEAT) {
+            if (!in_idle && tracelog) {
+                tracelog->event_idle();
+            }
+            in_idle = true;
             continue;
         }
-        cmd->run_command(*net);
+        in_idle = false;
+        cmd = control_sequence->next();
     }
+
     // computation may continue, so the program is finished as usual.
     run_scheduler();
-
 }
 
 Net * Thread::spawn_net(int def_index)

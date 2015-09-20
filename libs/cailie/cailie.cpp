@@ -105,6 +105,8 @@ int ca::main()
 				}
 			}
 		}
+    } else if (control_sequence) {
+
 	} else { // Normal run
 		for (int t = 0; t < process_count; t++) {
 			processes[t]->start(true);

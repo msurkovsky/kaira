@@ -108,6 +108,11 @@ int Process::process_packets(Thread *thread)
 	return 0;
 }
 
+int Process::process_packets(Thread *thread, int from_process) {
+    // TODO: implement me
+    return 0;
+}
+
 void Process::wait()
 {
 	MPI_Status status;
