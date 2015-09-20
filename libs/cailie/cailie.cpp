@@ -124,6 +124,18 @@ int ca::main()
             in_idle = false;
             cmd = control_sequence->next();
         }
+
+		for (int t = 0; t < process_count; t++) {
+			processes[t]->start(true);
+		}
+
+		for (int t = 0; t < process_count; t++) {
+			processes[t]->join();
+		}
+
+		for (int t = 0; t < process_count; t++) {
+			processes[t]->clear();
+		}
 	} else { // Normal run
 		for (int t = 0; t < process_count; t++) {
 			processes[t]->start(true);
