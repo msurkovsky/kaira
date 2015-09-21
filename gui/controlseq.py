@@ -24,7 +24,7 @@ import objectlist
 import xml.etree.ElementTree as xml
 
 command_parser = re.compile(
-   "(?P<process>\d+) (?P<action>[SFTR])( ((?P<arg_int>\d+)|(?P<arg_str>.*)))?"
+   "(?P<process>\d+) (?P<action>[SFTR]) (?P<arg_int>\d+)( (?P<arg_str>.*))?"
 )
 
 def sequence_dialog(sequence, mainwindow):
@@ -90,36 +90,46 @@ class ControlSequence:
 
         if action == "T":
             if match.group("arg_int"):
-                arg = match.group("arg_int")
+                transition_id = int(match.group("arg_int"))
             else:
-                arg = match.group("arg_str")
-            return on_fire(process, arg)
+                raise ControlSequenceException("No ID given.")
+
+            transition_name = ""
+            if match.group("arg_str"):
+                transition_name = match.group("arg_str")
+            return on_fire(process, transition_id, transition_name)
         elif action == "R":
             arg_int = match.group("arg_int")
             if arg_int is None:
-                raise ControlSequenceException("Invalid format of receive")
+                raise ControlSequenceException("Invalid format of the receive.")
             return on_receive(process, int(arg_int))
         elif action == "S":
             if match.group("arg_int"):
-                arg = match.group("arg_int")
+                transition_id = int(match.group("arg_int"))
             else:
-                arg = match.group("arg_str")
-            return on_transition_start(process, arg)
+                raise ControlSequenceException("No ID given.")
+
+            transition_name = ""
+            if match.group("arg_str"):
+                transition_name = match.group("arg_str")
+            return on_transition_start(process, transition_id, transition_name)
         else: # action == "F":
             return on_transition_finish(process)
 
     def get_commands_size(self):
         return len(self.commands)
 
-    def add_fire(self, process, transition):
-        self.commands.append("{0} T {1}".format(process, transition))
+    def add_fire(self, process, transition_id, transition_name):
+        self.commands.append("{0} T {1} {2}".format(process, transition_id,
+                                                    transition_name))
         if self.view:
-            self.view.add_fire(process, transition)
+            self.view.add_fire(process, transition_id, transition_name)
 
-    def add_transition_start(self, process, transition):
-        self.commands.append("{0} S {1}".format(process, transition))
+    def add_transition_start(self, process, transition_id, transition_name):
+        self.commands.append("{0} S {1} {2}".format(process, transition_id,
+                                                    transition_name))
         if self.view:
-            self.view.add_transition_start(process, transition)
+            self.view.add_transition_start(process, transition_id, transition_name)
 
     def add_transition_finish(self, process):
         self.commands.append("{0} F".format(process))
@@ -149,15 +159,15 @@ class SequenceView(gtkutils.SimpleList):
                          self.add_transition_finish,
                          self.add_receive)
 
-    def add_fire(self, process_id, transition):
+    def add_fire(self, process_id, transition_id, transition_name):
         self.append((str(process_id),
                      "<span background='green'>Fire</span>",
-                     transition))
+                     transition_name))
 
-    def add_transition_start(self, process_id, transition):
+    def add_transition_start(self, process_id, transition_id, transition_name):
         self.append((str(process_id),
                      "<span background='lightgreen'>StartT</span>",
-                     transition))
+                     transition_name))
 
     def add_transition_finish(self, process_id):
         self.append((str(process_id),
@@ -172,17 +182,19 @@ class SequenceView(gtkutils.SimpleList):
 
 class SequenceListWidget(gtk.HPaned):
 
-    def __init__(self, project):
+    def __init__(self, app, project):
         gtk.HPaned.__init__(self)
+        self.app = app
         self.project = project
         buttons = [
-            (None, gtk.STOCK_REMOVE, self._remove_sequence)
+            (None, gtk.STOCK_REMOVE, self._remove_sequence),
+            ("Export", None, self._export_sequence)
         ]
 
         self.objlist = objectlist.ObjectList([("_", object), ("Sequences", str) ], buttons)
         self.objlist.object_as_row = lambda obj: [ obj, obj.name ]
         self.objlist.cursor_changed = self.on_cursor_changed
-        self.objlist.set_size_request(150, 0)
+        self.objlist.set_size_request(175, 0)
         self.event = self.project.set_callback(
             "sequences_changed",
             lambda: self.objlist.refresh(project.sequences))
@@ -206,3 +218,25 @@ class SequenceListWidget(gtk.HPaned):
     def _remove_sequence(self, obj):
         if obj:
             self.project.remove_sequence(obj)
+
+    def _export_sequence(self, sequence):
+        if sequence:
+            dialog = gtk.FileChooserDialog("Export Control Sequence",
+                                           self.app.window,
+                                           gtk.FILE_CHOOSER_ACTION_SAVE,
+                                           (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                                           gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+            dialog.set_default_response(gtk.RESPONSE_OK)
+            dialog.set_current_name(sequence.name)
+
+            try:
+                response = dialog.run()
+                filename = dialog.get_filename()
+            finally:
+                dialog.destroy()
+
+            if response == gtk.RESPONSE_OK:
+                with open(filename, 'w') as f:
+                    for command in sequence.commands:
+                        f.write(command + "\n")
+                f.close()

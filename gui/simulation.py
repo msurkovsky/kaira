@@ -247,11 +247,12 @@ class Simulation(EventSource):
         def callback():
             name = utils.sanitize_name(transition.get_name_or_id())
             if phases == 2 or not transition.has_code():
-                self.sequence.add_fire(process_id, name)
+                self.sequence.add_fire(process_id, transition.get_id(), name)
                 if query_reports:
                     self.query_reports(ok_callback)
             else:
-                self.sequence.add_transition_start(process_id, name)
+                self.sequence.add_transition_start(process_id,
+                                                   transition.get_id(), name)
                 if query_reports:
                     self.query_reports(ok_callback)
                 if not transition.has_code():
