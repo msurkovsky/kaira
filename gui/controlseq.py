@@ -221,6 +221,9 @@ class SequenceListWidget(gtk.HPaned):
 
     def _export_sequence(self, sequence):
         if sequence:
+            DESCRIPTION = "Kaira control sequence"
+            VERSION = "1.0"
+
             dialog = gtk.FileChooserDialog("Export Control Sequence",
                                            self.app.window,
                                            gtk.FILE_CHOOSER_ACTION_SAVE,
@@ -237,6 +240,7 @@ class SequenceListWidget(gtk.HPaned):
 
             if response == gtk.RESPONSE_OK:
                 with open(filename, 'w') as f:
+                    f.write("{0} v{1}\n".format(DESCRIPTION, VERSION)) # header
                     for command in sequence.commands:
                         f.write(command + "\n")
                 f.close()
