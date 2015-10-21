@@ -25,7 +25,8 @@ def build(ctx):
 
     if ctx.env.HAVE_MPI:
         env = ctx.all_envs["mpi"]
-        files = source_files + ("process_mpi.cpp", "mpi_requests.cpp")
+        files = source_files + ("process_mpi.cpp", "mpi_requests.cpp",
+                "cs_process_mpi.cpp")
         ctx.stlib(source=files,
                   target="cailiempi",
                   cxxflags="-DCA_MPI",
