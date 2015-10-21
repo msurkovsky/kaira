@@ -69,6 +69,11 @@ int Thread::process_messages()
 	return process->process_packets(this) || result;
 }
 
+int Thread::process_messages(int from_process) {
+    int result = process_thread_messages();
+    return process->process_packets(this, from_process) || result;
+}
+
 static void * thread_run(void *data)
 {
 	Thread *thread = (Thread*) data;

@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "parameters.h"
 
+#include <iostream>
 #include <getopt.h>
 #include <assert.h>
 #include <stdarg.h>
@@ -25,6 +26,7 @@ Listener *listener = NULL;
 std::vector<Parameter*> parameters;
 
 size_t tracelog_size = 0;
+ControlSequence *control_sequence = NULL;
 
 #ifdef CA_SHMEM
 Process **processes = NULL;
@@ -104,6 +106,35 @@ int ca::main()
 			}
 		}
 	} else { // Normal run
+        if (control_sequence) { // follow the given control sequnce
+            bool quit = false;
+            control_sequence->begin();
+            Command *cmd = control_sequence->next();
+            bool in_idle = false;
+            while (cmd != NULL && !quit) {
+                Thread *thread = processes[cmd->get_process_id()]->get_thread();
+                Command::result_t res = cmd->run_command(thread);
+                if (processes[cmd->get_process_id()]->quit_flag) {
+                    quit = true;
+                    break;
+                }
+                if (res == Command::REPEAT) {
+                    if (!in_idle && thread->get_tracelog()) {
+                        thread->get_tracelog()->event_idle();
+                    }
+                    in_idle = true;
+                    continue;
+                }
+                in_idle = false;
+                cmd = control_sequence->next();
+            }
+
+            if (quit) { // the scheduller do not have to be started
+                return 0;
+            }
+        }
+
+        // from here the computation continue normally
 		for (int t = 0; t < process_count; t++) {
 			processes[t]->start(true);
 		}
@@ -163,6 +194,10 @@ static void finalize()
 	if (listener != NULL) {
 		delete listener;
 	}
+
+    if (control_sequence != NULL) {
+        delete control_sequence;
+    }
 }
 
 void ca::init(int argc,
@@ -183,7 +218,7 @@ void ca::init(int argc,
 
 	atexit(finalize);
 	ca::parameters = parameters;
-	std::string all_args = std::string("hp:t:l:s:br:T:S") + extra_args;
+	std::string all_args = std::string("hp:t:l:s:br:T:Sc:") + extra_args;
 	while ((c = getopt_long (argc, argv, all_args.c_str(), longopts, NULL)) != -1)
 		switch (c) {
 			case 'h': {
@@ -264,6 +299,10 @@ void ca::init(int argc,
 				sequential_run = true;
 				#endif
 			} break;
+
+            case 'c': { // controled run
+                control_sequence = new ControlSequence(optarg);
+            } break;
 
 			case '?':
 			default:

@@ -94,6 +94,7 @@ class Process {
 		void process_service_message(Thread *thread, ServiceMessage *smsg);
 		bool process_packet(Thread *thread, int from_process, int tag, void *data, size_t size);
 		int process_packets(Thread *thread);
+		int process_packets(Thread *thread, int from_process);
 
 		#ifdef CA_SHMEM
 		void add_packet(int from_process, int tag, void *data, size_t size);

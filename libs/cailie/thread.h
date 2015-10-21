@@ -81,6 +81,7 @@ class Thread : public ThreadBase {
 		void add_message(ThreadMessage *message);
 		bool process_thread_messages();
 		int process_messages();
+		int process_messages(int from_process);
 		void clean_thread_messages();
 		void process_message(ThreadMessage *message);
 		Net * spawn_net(int def_index);

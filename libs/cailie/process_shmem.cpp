@@ -120,6 +120,40 @@ int ca::Process::process_packets(Thread *thread)
 	return 0;
 }
 
+int ca::Process::process_packets(Thread *thread, int from_process) {
+    if (packets) {
+		pthread_mutex_lock(&packet_mutex);
+		ShmemPacket *p = packets;
+		packets = NULL;
+		pthread_mutex_unlock(&packet_mutex);
+
+		/* Now we have to be sure that all thread messages
+           are processed and we know about all nets */
+		thread->process_thread_messages();
+		bool net_changed = false;
+		while (p) {
+            if (p->from_process == from_process) {
+                net_changed |= process_packet(
+                        thread, p->from_process, p->tag, p->data, p->size);
+            }
+
+			ShmemPacket *next = p->next;
+
+            if (p->from_process == from_process) {
+                delete p;
+            }
+
+			p = next;
+		}
+		TraceLog *tracelog = thread->get_tracelog();
+		if (net_changed && tracelog) {
+			tracelog->event_end();
+		}
+		return 1;
+    }
+    return 0;
+}
+
 void ca::Process::init_collective_operations(int process_count)
 {
 	collective_transition_id = 0;

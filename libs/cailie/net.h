@@ -178,6 +178,7 @@ class Net : public NetBase {
 
 		int fire_transition(Thread *thread, int transition_id);
 		Transition * pick_active_transition();
+        Transition * get_transition(int transition_id);
 		void activate_all_transitions();
 		bool is_something_enabled(Thread *thread);
 

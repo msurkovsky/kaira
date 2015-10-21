@@ -166,11 +166,11 @@ Process::~Process()
 
 void Process::start(bool own_thread) {
 	quit_flag = false;
-	if (!own_thread) {
-		thread->run_scheduler();
-	} else {
-		thread->start();
-	}
+    if (!own_thread) {
+        thread->run_scheduler();
+    } else {
+        thread->start();
+    }
 }
 
 void Process::join() {
