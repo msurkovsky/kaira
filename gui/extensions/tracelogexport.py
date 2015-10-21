@@ -138,13 +138,14 @@ class TracelogToXES(extensions.Operation):
 
     def run(self, app, tracelogs):
         log = xes.Log("2.0")
-        #print dir(self.XESRunInstance)
+
+        # set default values
         log.add_global_event_attribute(
-            self.XESRunInstance.createAttr(self.XESRunInstance.TIME_STAMP))
+            self.XESRunInstance.createAttr(self.XESRunInstance.TIME_STAMP, -1))
         log.add_global_event_attribute(
-            self.XESRunInstance.createAttr(self.XESRunInstance.PROCESS_ID))
+            self.XESRunInstance.createAttr(self.XESRunInstance.PROCESS_ID, -1))
         log.add_global_event_attribute(
-            self.XESRunInstance.createAttr(self.XESRunInstance.ACTIVITY))
+            self.XESRunInstance.createAttr(self.XESRunInstance.ACTIVITY, ""))
 
         for tracelog in tracelogs:
             trace = xes.Trace()
