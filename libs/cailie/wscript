@@ -17,7 +17,7 @@ source_files =  (
 )
 
 def build(ctx):
-    files = source_files + ("process_shmem.cpp",)
+    files = source_files + ("process_shmem.cpp", "cs_command_shmem.cpp")
     ctx.stlib(source=files,
               target="cailie",
               cxxflags="-DCA_SHMEM",
