@@ -119,7 +119,7 @@ class TracelogToXES(extensions.Operation):
             e.add_attribute(self.createAttr(self.TIME_STAMP, time))
             e.add_attribute(self.createAttr(self.PROCESS_ID, process_id))
             e.add_attribute(self.createAttr(
-                self.ACTIVITY, "receive/{0}/{1}".format(origin_id, process_id)))
+                self.ACTIVITY, "receive/{0}/{1}".format(process_id, origin_id)))
 
             # optional attributes
             e.add_attribute(self.createAttr(
