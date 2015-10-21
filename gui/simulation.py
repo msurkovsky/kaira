@@ -186,8 +186,12 @@ class Simulation(EventSource):
                                  1,
                                  ok_callback=next_command)
 
-        def finish(process_id):
+        def finish(process_id, transition):
+            t = transitions.get(transition)
+            if t is None:
+                 raise SimulationException("Transition '{0}' not found".format(transition))
             self.finish_transition(process_id,
+                                   t.id,
                                    ok_callback=next_command,
                                    fail_callback=fail_callback)
 
@@ -255,8 +259,10 @@ class Simulation(EventSource):
                                                    transition.get_id(), name)
                 if query_reports:
                     self.query_reports(ok_callback)
+
                 if not transition.has_code():
-                    self.sequence.add_transition_finish(process_id)
+                    self.sequence.add_transition_finish(process_id,
+                            transition_id, transition.get_name_or_id())
                     if query_reports:
                         self.query_reports(ok_callback)
             if ok_callback and not query_reports:
@@ -271,11 +277,15 @@ class Simulation(EventSource):
 
     def finish_transition(self,
                           process_id,
+                          transition_id,
                           ok_callback=None,
                           fail_callback=None,
                           query_reports=True):
+
+        transition = self.project.get_item(transition_id)
         def callback():
-            self.sequence.add_transition_finish(process_id)
+            self.sequence.add_transition_finish(process_id, transition_id,
+                    transition.get_name_or_id())
             if query_reports:
                 self.query_reports(ok_callback)
             elif ok_callback:

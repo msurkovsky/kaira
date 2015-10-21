@@ -83,7 +83,7 @@ class ControlSequence:
         line = self.commands[i]
         match = command_parser.match(line)
         if match is None:
-            raise ControlSequenceException("Invalid format: ", line)
+            raise ControlSequenceException("Invalid format: '{0}'.".format(line))
 
         process = int(match.group("process"))
         action = match.group("action")
@@ -103,7 +103,7 @@ class ControlSequence:
             if arg_int is None:
                 raise ControlSequenceException("Invalid format of the receive.")
             return on_receive(process, int(arg_int))
-        elif action == "S":
+        else: # action is "F" or "S:
             if match.group("arg_int"):
                 transition_id = int(match.group("arg_int"))
             else:
@@ -112,9 +112,12 @@ class ControlSequence:
             transition_name = ""
             if match.group("arg_str"):
                 transition_name = match.group("arg_str")
-            return on_transition_start(process, transition_id, transition_name)
-        else: # action == "F":
-            return on_transition_finish(process)
+
+            if action == "S":
+                return on_transition_start(process, transition_id, transition_name)
+
+            # transition finish
+            return on_transition_finish(process, transition_id, transition_name)
 
     def get_commands_size(self):
         return len(self.commands)
@@ -131,10 +134,11 @@ class ControlSequence:
         if self.view:
             self.view.add_transition_start(process, transition_id, transition_name)
 
-    def add_transition_finish(self, process):
-        self.commands.append("{0} F".format(process))
+    def add_transition_finish(self, process, transition_id, transition_name):
+        self.commands.append("{0} F {1} {2}".format(process, transition_id,
+                                                    transition_name))
         if self.view:
-            self.view.add_transition_finish(process)
+            self.view.add_transition_finish(process, transition_id, transition_name)
 
     def add_receive(self, process, from_process):
         self.commands.append("{0} R {1}".format(process, from_process))
@@ -169,10 +173,10 @@ class SequenceView(gtkutils.SimpleList):
                      "<span background='lightgreen'>StartT</span>",
                      transition_name))
 
-    def add_transition_finish(self, process_id):
+    def add_transition_finish(self, process_id, transition_id, transition_name):
         self.append((str(process_id),
                      "<span background='#FF7070'>FinishT</span>",
-                     ""))
+                     transition_name))
 
     def add_receive(self, process_id, from_process):
         self.append((str(process_id),

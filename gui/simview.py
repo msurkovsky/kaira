@@ -52,7 +52,7 @@ class SimCanvasConfig(NetViewCanvasConfig):
                 callback = lambda: self.simulation.receive_all()
             else:
                 callback = None
-            self.simulation.finish_transition(process_id, callback)
+            self.simulation.finish_transition(process_id, transition.get_id(), callback)
         elif item.kind == "packet" and item.packet_data is not None:
             if not self.check_last_active():
                 return
