@@ -43,9 +43,10 @@ class CmdStartTransition : public CmdFireTransition {
 };
 
 
-class CmdFinishTransition : public Command {
+class CmdFinishTransition : public CmdFireTransition {
     public:
-        CmdFinishTransition(int process) : Command(process) {}
+        CmdFinishTransition(int process, int transition_id)
+            : CmdFireTransition(process, transition_id) {}
         virtual result_t run_command(Thread *thread);
 };
 

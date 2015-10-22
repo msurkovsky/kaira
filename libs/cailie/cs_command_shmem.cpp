@@ -39,10 +39,12 @@ Command::result_t CmdFireTransition::run_command(Thread *thread) {
 }
 
 Command::result_t CmdStartTransition::run_command(Thread *thread) {
+    // TODO: implement me!
     return Command::OK;
 }
 
 Command::result_t CmdFinishTransition::run_command(Thread *thread) {
+    // TODO: implement me!
     return Command::OK;
 }
 

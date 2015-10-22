@@ -97,8 +97,10 @@ void ControlSequence::read(const string &path, int process_id) {
                         new CmdStartTransition(process, transition_id));
                 } break;
                 case 'F' : {
+                    int transition_id;
+                    cmd >> transition_id;
                     commands.push_back(
-                        new CmdFinishTransition(process));
+                        new CmdFinishTransition(process, transition_id));
                 }
                 case 'R' : {
                     int from_process_id;
