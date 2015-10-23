@@ -7,7 +7,7 @@ using namespace ca;
 using namespace std;
 
 const string ControlSequence::VERSION = "1.0";
-const string ControlSequence::TYPE = "strict";
+const string ControlSequence::TYPE = "transition_id";
 
 ControlSequence::ControlSequence(const string &path, int process_id) : idx(0) {
     read(path, process_id);
